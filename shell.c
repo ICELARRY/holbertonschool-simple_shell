@@ -6,6 +6,8 @@
 
 #define MAX_ARGS 64
 
+extern char **environ;
+
 void execute(char *line)
 {
 	char *args[MAX_ARGS];
@@ -27,17 +29,45 @@ void execute(char *line)
 	if (strcmp(args[0], "exit") == 0)
 		exit(0);
 
+	if (strchr(args[0], '/') == NULL)
+	{
+		char *path = getenv("PATH");
+		char *path_copy = strdup(path);
+		char *dir = strtok(path_copy, ":");
+
+		while (dir)
+		{
+			char *full_path = malloc(strlen(dir) + strlen(args[0]) + 2);
+			sprintf(full_path, "%s/%s", dir, args[0]);
+
+			if (access(full_path, X_OK) == 0)
+			{
+				args[0] = full_path;
+				break;
+			}
+			free(full_path);
+			dir = strtok(NULL, ":");
+		}
+		free(path_copy);
+
+		if (!dir)
+		{
+			fprintf(stderr, "Command not found: %s\n", args[0]);
+			return;
+		}
+	}
+
 	pid = fork();
 	if (pid == 0)
 	{
-		if (execvp(args[0], args) == -1)
-		{
-			perror("Error");
-			exit(EXIT_FAILURE);
-		}
+		execve(args[0], args, environ);
+		perror("execve");
+		exit(EXIT_FAILURE);
 	}
 	else
 	{
 		wait(NULL);
+		if (strchr(args[0], '/') == NULL)
+			free(args[0]);
 	}
 }
