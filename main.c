@@ -22,9 +22,9 @@ int main(void)
 			break;
 		}
 
-		if (line[0] != '\n')
-			execute(line);
+		execute(line);
 	}
+
 	free(line);
 	return (0);
 }

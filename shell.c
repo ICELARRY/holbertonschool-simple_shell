@@ -1,34 +1,39 @@
 #include "shell.h"
 
 /**
- * execute - executes a command
- * @line: input command
+ * execute - Runs a command with arguments
+ * @line: input string from user
  */
 void execute(char *line)
 {
+	char *args[64];
+	int i = 0, status;
 	pid_t pid;
-	char *argv[2];
-	int status;
 
-	line[strcspn(line, "\n")] = '\0';
-	argv[0] = line;
-	argv[1] = NULL;
+	args[i] = strtok(line, " \t\n");
+	while (args[i] != NULL && i < 63)
+	{
+		i++;
+		args[i] = strtok(NULL, " \t\n");
+	}
+
+	if (args[0] == NULL)
+		return;
+
+	if (strcmp(args[0], "exit") == 0)
+		exit(0);
 
 	pid = fork();
 	if (pid == 0)
 	{
-		if (execve(argv[0], argv, environ) == -1)
+		if (execvp(args[0], args) == -1)
 		{
 			perror("./shell");
 			exit(EXIT_FAILURE);
 		}
 	}
 	else if (pid > 0)
-	{
-		waitpid(pid, &status, 0);
-	}
+		wait(&status);
 	else
-	{
-		perror("fork");
-	}
+		perror("fork failed");
 }
