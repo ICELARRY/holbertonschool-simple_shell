@@ -1,21 +1,25 @@
-#include "shell.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
-/**
- * execute - Runs a command with arguments
- * @line: input string from user
- */
+#define MAX_ARGS 64
+
 void execute(char *line)
 {
-	char *args[64];
-	int i = 0, status;
+	char *args[MAX_ARGS];
+	char *token;
+	int i = 0;
 	pid_t pid;
 
-	args[i] = strtok(line, " \t\n");
-	while (args[i] != NULL && i < 63)
+	token = strtok(line, " \t\n");
+	while (token && i < MAX_ARGS - 1)
 	{
-		i++;
-		args[i] = strtok(NULL, " \t\n");
+		args[i++] = token;
+		token = strtok(NULL, " \t\n");
 	}
+	args[i] = NULL;
 
 	if (args[0] == NULL)
 		return;
@@ -28,12 +32,12 @@ void execute(char *line)
 	{
 		if (execvp(args[0], args) == -1)
 		{
-			perror("./shell");
+			perror("Error");
 			exit(EXIT_FAILURE);
 		}
 	}
-	else if (pid > 0)
-		wait(&status);
 	else
-		perror("fork failed");
+	{
+		wait(NULL);
+	}
 }
