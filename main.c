@@ -1,11 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "shell.h"
 
-#define BUFFER_SIZE 1024
-
-void execute(char *line); /* function prototype */
-
+/**
+ * main - Entry point of the shell
+ * Return: Always 0
+ */
 int main(void)
 {
 	char *line = NULL;
@@ -14,16 +12,18 @@ int main(void)
 
 	while (1)
 	{
-		printf("#cisfun$ ");
+		write(1, "#cisfun$ ", 9);
+
 		read = getline(&line, &len, stdin);
 		if (read == -1)
 		{
 			free(line);
-			exit(0);
+			write(1, "\n", 1);
+			break;
 		}
+
 		execute(line);
 	}
-
 	free(line);
 	return (0);
 }
